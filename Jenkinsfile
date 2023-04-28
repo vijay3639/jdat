@@ -1,6 +1,14 @@
 pipeline {
   agent any
   stages {
+    stage('Compile') {
+      steps {
+        script{
+                def mvnHome = tool name: 'MAVEN_HOME', type: 'maven'
+                sh "${mvnHome}/bin/mvn package"
+        }
+      }
+    }
     stage('Building Docker Image') {
       steps{
         script {
