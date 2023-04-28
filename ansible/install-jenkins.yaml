@@ -1,0 +1,71 @@
+---
+- hosts: jenkins
+  become: yes
+  remote_user: ec2-user
+  become_user: root
+  tasks:
+  - name: Download Long Term Jenkins release
+    get_url:
+      url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+      dest: /etc/yum.repos.d/jenkins.repo
+
+  - name: Import jenkins key from url
+    ansible.builtin.rpm_key:
+      state: present
+      key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+  - name: Install Jenkins repository
+    yum_repository:
+      description: add-jenkins repo
+      name: jenkins
+      baseurl: https://pkg.jenkins.io/redhat-stable/
+      gpgcheck: yes
+      gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+      enabled: yes
+
+  - name: dnf update
+    ansible.builtin.dnf:
+      name: '*'
+      state: latest
+
+  - name: Install java
+    dnf:
+      name: java-11-amazon-corretto-headless
+      state: present
+
+  - name: Install jenkins
+    dnf:
+      name: jenkins
+      state: latest
+
+  - name: daemon-reload to pick up config changes
+    ansible.builtin.systemd:
+      daemon_reload: yes
+
+  - name: Start jenkins
+    ansible.builtin.systemd:
+      name: jenkins
+      state: started
+  - name: Install required packages
+    dnf:
+      name:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      state: present
+
+  - name: Add Docker repository
+    command: "dnf install -y docker"
+
+  - name: Start Docker service
+    systemd:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: Add Docker repository
+    command: "usermod -aG docker jenkins"
+
+  - name: Add Docker repository
+    command: "docker login -u saidamo -p sairam2127!"      
+  
