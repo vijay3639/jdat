@@ -19,6 +19,7 @@ pipeline {
     stage('Push Image To Docker Hub') {
       steps{
         script {
+          sh "echo $USER"
           sh "docker push saidamo/cicd-poc-jenkins-ansible:$BUILD_NUMBER"
           }
         }
